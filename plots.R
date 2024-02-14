@@ -23,14 +23,14 @@ fitnessLabels = c("-1",
                   "-0.006",
                   " 0")
 
-custom_theme <- function (base_size = 16, base_family = "") {
+custom_theme <- function (base_size = 10, base_family = "") {
   theme_bw(base_size, base_family, base_line_size = base_size / 30) %+replace%
     theme(text = element_text(size = base_size,
                               colour = "black",
-                              family = "Geneva"),
-          axis.text = element_text(family = "Courier",
-                                   size = base_size / 1.5),
-          legend.text = element_text(family = "Courier"),
+                              family = "Alegreya"),
+          axis.text = element_text(family = "Alegreya",
+                                   size = base_size / 1.25),
+          legend.text = element_text(family = "Alegreya"),
           axis.text.x = element_text(angle = 90, hjust = 0),
           panel.grid.major.x = element_blank(),
           panel.grid.major.y = element_blank(),
@@ -110,6 +110,7 @@ bp <- ggplot(singleBig,
   geom_pointrange(data = f2Big,
                   mapping = aes(ymin = CI_0.025, ymax = CI_0.975),
                   shape = "diamond",
+                  size = 0.25,
                   alpha = 0.8) +
   geom_hline(yintercept = p, 
              color = "black", 
@@ -136,6 +137,7 @@ fp <- ggplot(singleFine %>% filter(Benefit != 0.196 & Benefit != 0.2),
                     filter(Benefit != 0.196 & Benefit != 0.2),
                 mapping = aes(ymin = CI_0.025, ymax = CI_0.975),
                 shape = "diamond",
+                size = 0.25,
                 alpha = 0.8) +
   scale_y_continuous(labels = label_number(accuracy=0.00001)) +
   facet_wrap(~Benefit+Cost, 
@@ -154,7 +156,9 @@ fp <- ggplot(singleFine %>% filter(Benefit != 0.196 & Benefit != 0.2),
   guides(fill = "none") +
   custom_theme()
 
-sp <- plot_grid(bp, fp, labels = "AUTO", rel_widths = c(1.1, 1))
+sp <- plot_grid(bp, fp, labels = "AUTO", label_size = 9)
+
+ggsave("fig2.pdf", sp, unit="in", width=7.5, height=3.5, device=cairo_pdf)
 
 #generation vs pi by fitness/BGS
 pp <- 
@@ -162,20 +166,22 @@ pp <-
        aes(x = generation,
            y = pi_neutral,
            color = fitness)) +
-  geom_smooth(se = F) +
+  geom_smooth(se = F, linewidth = 0.75) +
   scale_y_continuous(labels = label_number(accuracy = 0.0001)) +
   scale_color_manual(name = "Fitness of\ndeleterious allele",
                      values = fitnessColors,
                      labels = fitnessLabels) +
-  ylab(bquote(paste("Mean ", pi))) +
+  ylab("Mean π") +
   xlab("Generation") + 
   custom_theme() %+replace%
   theme(panel.grid.major.x = element_line(color = "#dddddd"),
         panel.grid.minor.x = element_line(color = "#eeeeee"),
         panel.grid.major.y = element_line(color = "#dddddd"),
         panel.grid.minor.y = element_line(color = "#eeeeee"),
-        axis.text.x = element_text())
+        axis.text.x = element_text(),
+        legend.key.height = unit(0.15, 'in'))
 
+ggsave("fig1.pdf", pp, unit="in", width=5, height=3, device=cairo_pdf)
 
 #variation over recom. rate & benefit
 rp <- ggplot(sRecomStats,
@@ -192,11 +198,12 @@ rp <- ggplot(sRecomStats,
   geom_pointrange(data = f2Sup,
                 mapping = aes(ymin = CI_0.025, ymax = CI_0.975),
                 shape = "diamond",
+                size = 0.25,
                 alpha = 0.8) +
   facet_grid(scales = "free",
              rows = vars(`Benefit`),
              cols = vars(`Recom. Rate`),
-             labeller = label_newline) +
+             labeller = label_both) +
   geom_hline(yintercept = p, 
              color = "black", 
              alpha = 0.7,
@@ -204,8 +211,10 @@ rp <- ggplot(sRecomStats,
   xlab("Fitness of deleterious allele") + 
   ylab("Fixation probability of altruistic allele") + 
   guides(fill = "none") +
-  custom_theme()
+  custom_theme() +
+  theme(axis.title.x = element_text(margin = margin(t = 6, r = 0, b = 0, l = 0)))
 
+ggsave("fig3.pdf", rp, unit="in", width=6, height=6, device=cairo_pdf)
 
 ##### Statistics
 
